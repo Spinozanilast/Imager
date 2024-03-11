@@ -7,6 +7,11 @@ namespace Imager.Converters;
 
 public class ImageBrushToBitmapImageConverter
 {
+    /// <summary>
+    /// Конвертирует ImageBrush в BitmapImage.
+    /// </summary>
+    /// <param name="imageBrush">ImageBrush для конвертации.</param>
+    /// <returns>BitmapImage, полученный из ImageBrush.</returns>
     public static BitmapImage ConvertImageBrushToBitmapImage(ImageBrush imageBrush)
     {
         BitmapImage bitmapImage;
@@ -29,6 +34,13 @@ public class ImageBrushToBitmapImageConverter
         return bitmapImage;
     }
 
+    /// <summary>
+    /// Создает BitmapSource из Brush.
+    /// </summary>
+    /// <param name="drawingBrush">Brush для преобразования.</param>
+    /// <param name="size">Размер изображения.</param>
+    /// <param name="dpi">Разрешение изображения.</param>
+    /// <returns>BitmapSource, созданный из Brush.</returns>
     public static BitmapSource BitmapSourceFromBrush(Brush drawingBrush, int size = 32, int dpi = 96)
     {
         // RenderTargetBitmap = строит растровое изображение визуала

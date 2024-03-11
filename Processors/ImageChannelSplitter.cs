@@ -17,6 +17,7 @@ public class ImageChannelSplitter
     public BitmapSource GreenChannel { get; private set; }
     public BitmapSource BlueChannel { get; private set; }
     public ChannelMatrices ChannelMatrices { get; private set; }
+    public bool IsBinary { get; private set; }
 
     /// <summary>
     /// Конструктор класса.
@@ -26,17 +27,17 @@ public class ImageChannelSplitter
     {
         OriginalImage = source;
         ChannelMatrices = new ChannelMatrices();
-        InitializeOutputData(source);
+        IsBinary = false;
     }
 
-    private void InitializeOutputData(BitmapSource source)
+    public void ProcessBitmapSource()
     {
-        var width = source.PixelWidth;
-        var height = source.PixelHeight;
-        var stride = width * ((source.Format.BitsPerPixel + 7) / 8);
+        var width = OriginalImage.PixelWidth;
+        var height = OriginalImage.PixelHeight;
+        var stride = width * ((OriginalImage.Format.BitsPerPixel + 7) / 8);
 
         var pixelData = new byte[height * stride];
-        source.CopyPixels(pixelData, stride, 0);
+        OriginalImage.CopyPixels(pixelData, stride, 0);
 
         ChannelMatrices.RedMatrix = new int[OriginalImage.PixelHeight, OriginalImage.PixelWidth];
         ChannelMatrices.GreenMatrix = new int[OriginalImage.PixelHeight, OriginalImage.PixelWidth];
@@ -82,26 +83,9 @@ public class ImageChannelSplitter
         return BitmapSource.Create(width, height, 96, 96, PixelFormats.Bgra32, null, outputPixels, stride);
     }
 
-    public void UpdateGreyScaleMatrix(BitmapSource source)
-    {
-        var width = source.PixelWidth;
-        var height = source.PixelHeight;
-        var stride = width * ((source.Format.BitsPerPixel + 7) / 8);
-
-        var pixelData = new byte[height * stride];
-        source.CopyPixels(pixelData, stride, 0);
-
-        for (var i = 3; i < pixelData.Length; i += 4)
-        {
-            var row = (i / 4) / width;
-            var col = (i / 4) % width;
-
-            FillGrayscaleMatrix(pixelData, i, row, col);
-        }
-    }
-
     private void FillGrayscaleMatrix(byte[] pixelData, int i, int row, int col)
     {
+        IsBinary = true;
         if (pixelData[i - 1] == pixelData[i - 2] && pixelData[i - 1] == pixelData[i - 3])
         {
             if (pixelData[i - 1] == 0)
@@ -112,10 +96,12 @@ public class ImageChannelSplitter
             {
                 ChannelMatrices.GreyScaleMatrix[row, col] = 0;
             }
+            
         }
         else
         {
             ChannelMatrices.GreyScaleMatrix[row, col] = 0;
+            IsBinary = false;
         }
     }
 
@@ -127,30 +113,35 @@ public class ImageChannelSplitter
         }
         else
         {
-            switch (channelType)
-            {
-                case ChannelType.RedChannel:
-                    ChannelMatrices.RedMatrix[row, col] = newValue;
-                    break;
-                case ChannelType.GreenChannel:
-                    ChannelMatrices.GreenMatrix[row, col] = newValue;
-                    break;
-                case ChannelType.BlueChannel:
-                    ChannelMatrices.BlueMatrix[row, col] = newValue;
-                    break;
-            }
+            UpdateColorMatrix(channelType, row, col, newValue);
+        }
+    }
 
-            if (ChannelMatrices.RedMatrix[row, col] != ChannelMatrices.GreenMatrix[row, col] ||
-                ChannelMatrices.RedMatrix[row, col] != ChannelMatrices.BlueMatrix[row, col]) return;
+    private void UpdateColorMatrix(ChannelType channelType, int row, int col, byte newValue)
+    {
+        switch (channelType)
+        {
+            case ChannelType.RedChannel:
+                ChannelMatrices.RedMatrix[row, col] = newValue;
+                break;
+            case ChannelType.GreenChannel:
+                ChannelMatrices.GreenMatrix[row, col] = newValue;
+                break;
+            case ChannelType.BlueChannel:
+                ChannelMatrices.BlueMatrix[row, col] = newValue;
+                break;
+        }
 
-            if (ChannelMatrices.RedMatrix[row, col] == 0)
-            {
-                ChannelMatrices.GreyScaleMatrix[row, col] = 1;
-            }
-            else
-            {
-                ChannelMatrices.GreyScaleMatrix[row, col] = 0;
-            }
+        if (ChannelMatrices.RedMatrix[row, col] != ChannelMatrices.GreenMatrix[row, col] ||
+            ChannelMatrices.RedMatrix[row, col] != ChannelMatrices.BlueMatrix[row, col]) return;
+
+        if (ChannelMatrices.RedMatrix[row, col] == 0)
+        {
+            ChannelMatrices.GreyScaleMatrix[row, col] = 1;
+        }
+        else
+        {
+            ChannelMatrices.GreyScaleMatrix[row, col] = 0;
         }
     }
 }

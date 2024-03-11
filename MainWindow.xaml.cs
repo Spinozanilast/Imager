@@ -10,6 +10,7 @@ using System.IO;
 using Imager.Converters;
 using Imager.Utils;
 using MessageBox = ModernWpf.MessageBox;
+using OxyPlot;
 
 
 namespace Imager
@@ -27,17 +28,30 @@ namespace Imager
         private double _maxScale = 20.0;
         private bool _enableZoom = true;
 
+        /// <summary>
+        /// Конструктор главного окна.
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
             this.Loaded += MainWindow_Loaded;
         }
 
+        /// <summary>
+        /// Обработчик события загрузки главного окна.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             _gridViews = new[] { View2, View3, View4 };
         }
 
+        /// <summary>
+        /// Обработчик события изменения выбранного элемента в ComboBox.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void ImageDisplayOption_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var selectedOption = (sender as ComboBox).SelectedItem as ComboBoxItem;
@@ -66,6 +80,10 @@ namespace Imager
             }
         }
 
+        /// <summary>
+        /// Изменяет режим отображения изображения.
+        /// </summary>
+        /// <param name="stretch">Режим отображения изображения.</param>
         private void ChangeImageStretch(Stretch stretch)
         {
             if (_gridViews == null) return;
@@ -86,6 +104,11 @@ namespace Imager
             _currentViewStratch = stretch;
         }
 
+        /// <summary>
+        /// Обработчик события нажатия кнопки "Открыть файл".
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void OpenFileButton_OnClick(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog
@@ -108,9 +131,14 @@ namespace Imager
             SaveImageButton.IsEnabled = true;
         }
 
+        /// <summary>
+        /// Устанавливает фоновые изображения для представлений.
+        /// </summary>
+        /// <param name="firstViewBackgroundImage">Фоновое изображение для первого представления.</param>
         private void SetViewsBackgrounds(BitmapImage firstViewBackgroundImage)
         {
             _imageChannelSplitter = new ImageChannelSplitter(firstViewBackgroundImage);
+            _imageChannelSplitter.ProcessBitmapSource();
 
             View1.Background = new ImageBrush(firstViewBackgroundImage);
             View2.Background = new ImageBrush(_imageChannelSplitter.RedChannel);
@@ -139,7 +167,17 @@ namespace Imager
             _imageWriteableProcessor = new ImageWriteableProcessor(firstViewBackgroundImage, View1.Background as ImageBrush);
         }
 
+        /// <summary>
+        /// Обработчик события нажатия кнопки "Очистить все представления".
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void ClearAllViewsButton_Click(object sender, RoutedEventArgs e)
+        {
+            ClearAllViews();
+        }
+
+        private void ClearAllViews()
         {
             foreach (var view in _gridViews)
             {
@@ -155,12 +193,22 @@ namespace Imager
             SaveImageButton.IsEnabled = false;
         }
 
+        /// <summary>
+        /// Обработчик события переключения режима отображения изображения.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void ImageViewModeToggle_OnToggled(object sender, RoutedEventArgs e)
         {
             var toggleSwitch = (ModernToggleSwitch)sender;
+            GreyScaleGrid.Visibility = toggleSwitch.IsOn ? Visibility.Visible : Visibility.Collapsed;
             SetImageViewsMode(toggleSwitch.IsOn);
         }
 
+        /// <summary>
+        /// Устанавливает режим отображения изображений.
+        /// </summary>
+        /// <param name="toggleSwitchIsOn">Состояние переключателя.</param>
         private void SetImageViewsMode(bool toggleSwitchIsOn)
         {
             switch (toggleSwitchIsOn)
@@ -182,6 +230,11 @@ namespace Imager
             }
         }
 
+        /// <summary>
+        /// Отображает матрицу в DataGrid.
+        /// </summary>
+        /// <param name="dataGrid">DataGrid для отображения матрицы.</param>
+        /// <param name="matrix">Матрица для отображения.</param>
         private void DisplayMatrixInGridView(DataGrid dataGrid, int[,] matrix)
         {
             View2.CellEditEnding += DataGridRed_CellEditEnding;
@@ -210,6 +263,11 @@ namespace Imager
             dataGrid.ItemsSource = dataTable.DefaultView;
         }
 
+        /// <summary>
+        /// Обработчик события окончания редактирования ячейки в GreyScaleGrid.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void GreyScaleGrid_CellEditEnding(object? sender, DataGridCellEditEndingEventArgs e)
         {
             var newValue = ((TextBox)e.EditingElement).Text;
@@ -220,21 +278,42 @@ namespace Imager
             _imageChannelSplitter.OriginalImage = BitmapSourceFromBrush((ImageBrush)View1.Background);
         }
 
+        /// <summary>
+        /// Обработчик события окончания редактирования ячейки в DataGridBlue.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void DataGridBlue_CellEditEnding(object? sender, DataGridCellEditEndingEventArgs e)
         {
             DataGridCellEditEnding(sender, e, ChannelType.BlueChannel);
         }
 
+        /// <summary>
+        /// Обработчик события окончания редактирования ячейки в DataGridGreen.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void DataGridGreen_CellEditEnding(object? sender, DataGridCellEditEndingEventArgs e)
         {
             DataGridCellEditEnding(sender, e, ChannelType.GreenChannel);
         }
 
+        /// <summary>
+        /// Обработчик события окончания редактирования ячейки в DataGridRed.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void DataGridRed_CellEditEnding(object? sender, DataGridCellEditEndingEventArgs e)
         {
             DataGridCellEditEnding(sender, e, ChannelType.RedChannel);
         }
 
+        /// <summary>
+        /// Обработчик события окончания редактирования ячейки в DataGrid.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
+        /// <param name="channelType">Тип канала.</param>
         private void DataGridCellEditEnding(object? sender, DataGridCellEditEndingEventArgs e, ChannelType channelType)
         {
             try
@@ -253,57 +332,22 @@ namespace Imager
             }
         }
 
-
+        /// <summary>
+        /// Обработчик события нажатия кнопки "Сохранить изображение".
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void SaveImageButton_Click(object sender, RoutedEventArgs e)
         {
-            SaveImageBrushToFile((ImageBrush)View1.Background);
+            var imageSaver = new ImageSaver(); 
+            imageSaver.SaveImageBrushToFile((ImageBrush)View1.Background);
         }
 
-        public void SaveImageBrushToFile(ImageBrush imageBrush)
-        {
-            BitmapImage bitmapImage = ImageBrushToBitmapImageConverter.ConvertImageBrushToBitmapImage(imageBrush);
-
-            var saveFileDialog = new SaveFileDialog
-            {
-                Title = "Выберите путь для сохранения матрицы в изображение",
-                Filter = "JPEG Image|*.jpg|PNG Image|*.png|BMP Image|*.bmp"
-            };
-
-            if (saveFileDialog.ShowDialog() != true) return;
-            var encoder = GetEncoder(Path.GetExtension(saveFileDialog.FileName));
-            encoder.Frames.Add(BitmapFrame.Create(bitmapImage));
-
-            using FileStream fileStream = new FileStream(saveFileDialog.FileName, FileMode.Create);
-            encoder.Save(fileStream);
-        }
-
-
-
-        // <summary>
-        /// Возвращает кодировщик BitmapEncoder, соответствующий указанному расширению файла.
+        /// <summary>
+        /// Обработчик события нажатия кнопки "Открыть представление гистограммы".
         /// </summary>
-        /// <param name="extension">Расширение файла.</param>
-        /// <returns>Кодировщик BitmapEncoder.</returns>
-        private BitmapEncoder GetEncoder(string extension)
-        {
-            switch (extension.ToLower())
-            {
-                case ".jpg":
-                case ".jpeg":
-                    return new JpegBitmapEncoder();
-                case ".png":
-                    return new PngBitmapEncoder();
-                case ".bmp":
-                    return new BmpBitmapEncoder();
-                case ".gif":
-                    return new GifBitmapEncoder();
-                case ".tiff":
-                    return new TiffBitmapEncoder();
-                default:
-                    throw new InvalidOperationException("Неподдерживаемое расширение файла.");
-            }
-        }
-
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void HistogramViewOpenButton_Click(object sender, RoutedEventArgs e)
         {
             if (View1.Background == null)
@@ -317,6 +361,13 @@ namespace Imager
             histogramViewer.Show();
         }
 
+        /// <summary>
+        /// Создает BitmapSource из Brush.
+        /// </summary>
+        /// <param name="drawingBrush">Brush для преобразования.</param>
+        /// <param name="size">Размер изображения.</param>
+        /// <param name="dpi">Разрешение изображения.</param>
+        /// <returns>BitmapSource, созданный из Brush.</returns>
         public static BitmapSource BitmapSourceFromBrush(Brush drawingBrush, int size = 32, int dpi = 96)
         {
             var pixelFormat = PixelFormats.Pbgra32;
@@ -332,6 +383,11 @@ namespace Imager
             return rtb;
         }
 
+        /// <summary>
+        /// Обработчик события нажатия кнопки "Обновить матрицу в оттенках серого".
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void UpdateGreyscaleMatrixButton_Click(object sender, RoutedEventArgs e)
         {
             if (GreyScaleGrid.ItemsSource == null)
@@ -341,6 +397,32 @@ namespace Imager
             }
             GreyScaleGrid.ItemsSource = null;
             DisplayMatrixInGridView(GreyScaleGrid, _imageChannelSplitter.ChannelMatrices.GreyScaleMatrix);
+        }
+
+        private void ShadingWindowOpenButton_OnClickButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_imageChannelSplitter == null || !_imageChannelSplitter.IsBinary)
+            {
+                MessageBox.Show(this, "Image is not binary");
+                return;
+            }
+
+            if (!ImageViewModeToggle.IsOn)
+            {
+                MessageBox.Show(this, "Turn on Matrix Mode");
+                return;
+            }
+
+            var shadingWindow = new ShadingWindow(_imageChannelSplitter.ChannelMatrices.GreyScaleMatrix);
+            shadingWindow.ReturnImage += HandleSelectedImage;
+            shadingWindow.Show();
+        }
+
+        private void HandleSelectedImage(BitmapImage image)
+        {
+            ClearAllViews();
+            SetViewsBackgrounds(image);
+            ImageViewModeToggle.IsEnabled = true;
         }
     }
 }

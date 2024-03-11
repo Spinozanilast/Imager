@@ -37,21 +37,27 @@
                 Click="OpenFileButton_OnClick"
                 Content="Открыть файл" />
             <Button
-                x:Name="ClearAllViewsButton"
-                Margin="5"
-                Click="ClearAllViewsButton_Click"
-                Content="Очистить всё" />
-            <Button
+
                 x:Name="SaveImageButton"
                 Margin="5"
                 Click="SaveImageButton_Click"
                 Content="Сохранить картинку"
                 IsEnabled="False" />
             <Button
+                x:Name="ClearAllViewsButton"
+                Margin="5"
+                Click="ClearAllViewsButton_Click"
+                Content="Очистить всё" />
+            <Button
                 x:Name="HistogramViewOpenButton"
                 Margin="5"
                 Click="HistogramViewOpenButton_Click"
                 Content="Вывести гистограмму" />
+            <Button
+                x:Name="ShadingWindowOpenButton"
+                Margin="5"
+                Click="ShadingWindowOpenButton_OnClickButton_Click"
+                Content="Открыть окно для растушёвки" />
             <Button
                 x:Name="UpdateGreyscaleMatrixButton"
                 Margin="5"
@@ -81,8 +87,8 @@
                 <TabItem Header="Оригинальное изображение">
                     <ui:GridView x:Name="View1" ScrollViewer.VerticalScrollBarVisibility="Disabled" />
                 </TabItem>
-                <TabItem Header="Матрица градаций серого">
-                    <DataGrid x:Name="GreyScaleGrid" />
+                <TabItem Header="Матрица чёрного и белого">
+                    <DataGrid x:Name="GreyScaleGrid" Visibility="Collapsed"/>
                 </TabItem>
             </TabControl>
             <DataGrid
