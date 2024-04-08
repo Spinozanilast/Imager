@@ -38,12 +38,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="appIcon.png" />
+    <None Remove="icons8-image-48.png" />
     <None Remove="Utils\histogramIcon.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="appIcon.png" />
+    <Resource Include="icons8-image-48.png" />
     <Resource Include="Utils\histogramIcon.png" />
   </ItemGroup>
 

@@ -11,15 +11,17 @@
     Height="700"
     ui:ThemeManager.RequestedTheme="Light"
     ui:WindowHelper.UseModernWindowStyle="True"
-    Icon="/appIcon.png"
+    Icon="/icons8-image-48.png"
     SnapsToDevicePixels="True"
+    WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="10*" />
-            <RowDefinition Height="90*" />
+            <RowDefinition Height="12*" />
+            <RowDefinition Height="85*" />
+            <RowDefinition Height="5*" />
         </Grid.RowDefinitions>
-        <StackPanel
+        <WrapPanel
             Grid.Row="0"
             HorizontalAlignment="Center"
             Orientation="Horizontal">
@@ -33,11 +35,10 @@
                 Toggled="ImageViewModeToggle_OnToggled" />
             <Button
                 x:Name="OpenFileButton"
-                Margin="5"
+                HorizontalAlignment="Center"
                 Click="OpenFileButton_OnClick"
                 Content="Открыть файл" />
             <Button
-
                 x:Name="SaveImageButton"
                 Margin="5"
                 Click="SaveImageButton_Click"
@@ -73,7 +74,32 @@
                 <ComboBoxItem Content="Нормальный" />
                 <ComboBoxItem Content="Центрировать" />
             </ComboBox>
-        </StackPanel>
+            <Label
+                Margin="0,0,5,0"
+                VerticalAlignment="Center"
+                Content="Тип изображения" />
+            <ComboBox
+                x:Name="ImageTypeComboBox"
+                Width="150"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsEnabled="False"
+                SelectionChanged="ImageTypeComboBox_SelectionChanged">
+                <ComboBoxItem Content="Полутоновое"/>
+                <ComboBoxItem Content="Бинарное" />
+            </ComboBox>
+            <Popup x:Name="ConversionOptionsPopup" IsOpen="False" PlacementTarget="{Binding ElementName=ImageTypeComboBox}" Placement="Bottom">
+                <Border Background="White" BorderBrush="Black" BorderThickness="1" Padding="5">
+                    <StackPanel>
+                        <TextBlock Text="Выберите тип преобразования:" Margin="0 0 0 5"/>
+                        <ComboBox x:Name="ConversionComboBox" SelectionChanged="ConversionComboBox_SelectionChanged">
+                            <ComboBoxItem Content="RGB"/>
+                            <ComboBoxItem Content="HSB"/>
+                        </ComboBox>
+                    </StackPanel>
+                </Border>
+            </Popup>
+        </WrapPanel>
         <Grid Grid.Row="1" Margin="5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -88,7 +114,7 @@
                     <ui:GridView x:Name="View1" ScrollViewer.VerticalScrollBarVisibility="Disabled" />
                 </TabItem>
                 <TabItem Header="Матрица чёрного и белого">
-                    <DataGrid x:Name="GreyScaleGrid" Visibility="Collapsed"/>
+                    <DataGrid x:Name="GreyScaleGrid" Visibility="Collapsed" />
                 </TabItem>
             </TabControl>
             <DataGrid
@@ -116,5 +142,31 @@
                 BorderThickness="1"
                 CanUserResizeColumns="False" />
         </Grid>
+        <StackPanel
+            Grid.Row="2"
+            Background="#CBCBCB"
+            Orientation="Horizontal">
+            <Label
+                x:Name="lblResolution"
+                Margin="10,0,0,0"
+                VerticalContentAlignment="Center"
+                AutomationProperties.HelpText="Resolution"
+                ToolTip="Resolution" />
+            <TextBox
+                x:Name="textBoxImageType"
+                Margin="10,0,0,0"
+                VerticalContentAlignment="Center"
+                AutomationProperties.HelpText="Image Type"
+                GotFocus="TextBoxImageType_OnGotFocus"
+                LostFocus="TextBoxImageType_OnLostFocus"
+                TextChanged="LblImageType_OnTextChanged"
+                ToolTip="Image Type"
+                Visibility="Collapsed" />
+            <ListBox
+                x:Name="SuggestionsListBox"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                SelectionChanged="ListBox_SelectionChanged" />
+        </StackPanel>
     </Grid>
 </Window>

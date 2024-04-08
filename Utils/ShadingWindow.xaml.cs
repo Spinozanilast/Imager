@@ -56,14 +56,8 @@ namespace Imager.Utils
             }
 
             DistanceMatrixGridView.ItemsSource = dataTable.DefaultView;
-            ImagePreview.Source = shadingProcessor.ConvertToRgbImageSource(distanceMatrix);
+            ImagePreview.Source = shadingProcessor.ConvertToRgbBitmapSource(distanceMatrix);
 
-        }
-
-        private void SaveImageButton_Click(object sender, RoutedEventArgs e)
-        {
-            var imageSaver = new ImageSaver();
-            imageSaver.SaveImageBrushToFile(new ImageBrush(ImagePreview.Source));
         }
 
         private void ReturnImageButton_OnClick(object sender, RoutedEventArgs e)

@@ -8,25 +8,50 @@ using ModernToggleSwitch = ModernWpf.Controls.ToggleSwitch;
 using System.Data;
 using System.IO;
 using Imager.Converters;
+using Imager.ImageConverters;
 using Imager.Utils;
 using MessageBox = ModernWpf.MessageBox;
 using OxyPlot;
 
-
 namespace Imager
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Логика взаимодействия для MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        // Список предложений для текстового поля типа изображения
+        private readonly List<string> suggestions = new List<string> { "Цветное", "Полутоновое", "Бинарное" };
+
+        // Исходные элементы ComboBox
+        private List<ComboBoxItem> originalItems = new List<ComboBoxItem>();
+
+        // Массив представлений
         private DataGrid[] _gridViews;
+
+        // Основное изображение
+        private BitmapSource _bitmapSourceMain;
+
+        // Последнее использованное имя файла
         private string _lastFilename = string.Empty;
+
+        // Текущий режим растяжения изображения
         private Stretch _currentViewStratch = Stretch.Fill;
+
+        // Разделитель каналов изображения
         private ImageChannelSplitter _imageChannelSplitter;
+
+        // Процессор для редактирования изображений
         private ImageWriteableProcessor _imageWriteableProcessor;
+
+        // Максимальный масштаб для зума
         private double _maxScale = 20.0;
+
+        // Флаг включения зума
         private bool _enableZoom = true;
+
+        // Текущий тип изображения
+        private ImageType _currentImageType;
 
         /// <summary>
         /// Конструктор главного окна.
@@ -124,9 +149,18 @@ namespace Imager
 
             _lastFilename = dialog.FileName;
             var image = new BitmapImage(new Uri(_lastFilename));
+            _bitmapSourceMain = image;
+
             SetViewsBackgrounds(image);
+            lblResolution.Content = Math.Truncate(image.Width) + " x " + Math.Truncate(image.Height);
             ChangeImageStretch(_currentViewStratch);
 
+            var imageTypeData = ImageTypeDefiner.DetermineImageType(image);
+            _currentImageType = imageTypeData.Item1;
+
+            ImageTypeComboBox.IsEnabled = true;
+            textBoxImageType.Visibility = Visibility.Visible;
+            textBoxImageType.Text = imageTypeData.Item2;
             ImageViewModeToggle.IsEnabled = true;
             SaveImageButton.IsEnabled = true;
         }
@@ -175,6 +209,7 @@ namespace Imager
         private void ClearAllViewsButton_Click(object sender, RoutedEventArgs e)
         {
             ClearAllViews();
+
         }
 
         private void ClearAllViews()
@@ -188,9 +223,12 @@ namespace Imager
 
             View1.Background = null;
             GreyScaleGrid.ItemsSource = null;
-
+            textBoxImageType.Visibility = Visibility.Collapsed;
+            ImageTypeComboBox.IsEnabled = false;
+            ImageTypeComboBox.SelectedItem = null;
             ImageViewModeToggle.IsEnabled = false;
             SaveImageButton.IsEnabled = false;
+            lblResolution.Content = string.Empty;
         }
 
         /// <summary>
@@ -399,30 +437,264 @@ namespace Imager
             DisplayMatrixInGridView(GreyScaleGrid, _imageChannelSplitter.ChannelMatrices.GreyScaleMatrix);
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки "Открыть окно с теневыми эффектами".
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
         private void ShadingWindowOpenButton_OnClickButton_Click(object sender, RoutedEventArgs e)
         {
+            // Проверяем, является ли изображение двоичным и включен ли режим матрицы
             if (_imageChannelSplitter == null || !_imageChannelSplitter.IsBinary)
             {
-                MessageBox.Show(this, "Image is not binary");
+                MessageBox.Show(this, "Изображение не является двоичным");
                 return;
             }
 
             if (!ImageViewModeToggle.IsOn)
             {
-                MessageBox.Show(this, "Turn on Matrix Mode");
+                MessageBox.Show(this, "Включите режим матрицы");
                 return;
             }
 
+            // Открываем окно с теневыми эффектами
             var shadingWindow = new ShadingWindow(_imageChannelSplitter.ChannelMatrices.GreyScaleMatrix);
             shadingWindow.ReturnImage += HandleSelectedImage;
             shadingWindow.Show();
         }
 
+        /// <summary>
+        /// Обработчик получения выбранного изображения из окна с теневыми эффектами.
+        /// </summary>
+        /// <param name="image">Выбранное изображение.</param>
         private void HandleSelectedImage(BitmapImage image)
         {
+            // Очищаем все представления и устанавливаем новое изображение
             ClearAllViews();
             SetViewsBackgrounds(image);
+            _bitmapSourceMain = image;
+            _currentImageType = ImageType.Halftone;
+            textBoxImageType.Text = "Полутоновое";
             ImageViewModeToggle.IsEnabled = true;
+            SaveImageButton.IsEnabled = true;
         }
+
+        /// <summary>
+        /// Обработчик изменения выбранного типа изображения в ComboBox.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
+        private void ImageTypeComboBox_SelectionChanged(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (ImageTypeComboBox.SelectedItem is not ComboBoxItem selectedItem)
+                    return;
+
+                string selectedContent = selectedItem.Content.ToString();
+                var imageType = ImageType.Color;
+
+                switch (selectedContent)
+                {
+                    case "Полутоновое":
+                        ConversionOptionsPopup.IsOpen = true;
+                        break;
+                    case "Бинарное":
+                        ConversionOptionsPopup.IsOpen = false;
+                        UpdateImageType(ImageType.Binary, null);
+                        break;
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                MessageBox.Show(ex.Message);
+                ImageTypeComboBox.SelectedItem = null;
+            }
+        }
+
+        /// <summary>
+        /// Обработчик изменения выбранного преобразования в ComboBox.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
+        private void ConversionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (ConversionComboBox.SelectedItem is not ComboBoxItem selectedItem)
+                    return;
+
+                string selectedConversion = selectedItem.Content.ToString();
+                var coersionType = ColorToHalftoneCoersionType.Rgb;
+
+                switch (selectedConversion)
+                {
+                    case "RGB":
+                        coersionType = ColorToHalftoneCoersionType.Rgb;
+                        break;
+                    case "HSB":
+                        coersionType = ColorToHalftoneCoersionType.Hsb;
+                        break;
+                }
+
+                UpdateImageType(ImageType.Halftone, coersionType);
+            }
+            catch (ArgumentException ex)
+            {
+                MessageBox.Show(ex.Message);
+                ConversionComboBox.SelectedItem = null;
+            }
+            finally
+            {
+                ConversionOptionsPopup.IsOpen = false;
+            }
+        }
+
+
+        /// <summary>
+        /// Метод обновления типа изображения.
+        /// </summary>
+        /// <param name="imageType">Тип изображения.</param>
+        /// <param name="coersionType">Тип преобразования цвета в полутоновое изображение (необязательный).</param>
+        private void UpdateImageType(ImageType imageType, ColorToHalftoneCoersionType? coersionType)
+        {
+            var imageConverterFactory = ImageConverterFactory.GetConverter(imageType, coersionType);
+            var image = imageConverterFactory.Convert(_bitmapSourceMain, _currentImageType);
+            BitmapImage bitmapImage;
+
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                BmpBitmapEncoder encoder = new BmpBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create((BitmapSource)image));
+                encoder.Save(memoryStream);
+                memoryStream.Position = 0;
+
+                bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memoryStream;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+            }
+
+            SetViewsBackgrounds(bitmapImage);
+            _bitmapSourceMain = image;
+            ChangeImageStretch(_currentViewStratch);
+            textBoxImageType.Text = coersionType != null ? "Полутоновое" : "Бинарное";
+            _currentImageType = imageType;
+        }
+
+        /// <summary>
+        /// Обработчик изменения текста в поле типа изображения.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
+        private void LblImageType_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            string userInput = textBoxImageType.Text.ToLower();
+            List<string> filteredSuggestions = new List<string>();
+
+            foreach (string suggestion in suggestions)
+            {
+                if (suggestion.ToLower().StartsWith(userInput))
+                {
+                    filteredSuggestions.Add(suggestion);
+                }
+            }
+
+            switch (userInput)
+            {
+                case "цветное":
+                    _currentImageType = ImageType.Color;
+                    break;
+                case "полутоновое":
+                    _currentImageType = ImageType.Halftone;
+                    break;
+                case "бинарное":
+                    _currentImageType = ImageType.Binary;
+                    break;
+            }
+
+            if (userInput[0].ToString().ToUpper() + userInput.Substring(1) == filteredSuggestions[0])
+            {
+                SuggestionsListBox.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            if (filteredSuggestions.Count > 0)
+            {
+                SuggestionsListBox.ItemsSource = filteredSuggestions;
+                SuggestionsListBox.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                SuggestionsListBox.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (SuggestionsListBox.SelectedItem != null)
+            {
+                textBoxImageType.Text = SuggestionsListBox.SelectedItem.ToString();
+                SuggestionsListBox.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        /// <summary>
+        /// Обработчик потери фокуса у поля типа изображения.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
+        private void TextBoxImageType_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            SuggestionsListBox.Visibility = Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// Обработчик получения фокуса поля типа изображения.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Аргументы события.</param>
+        private void TextBoxImageType_OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            SuggestionsListBox.Visibility = Visibility.Visible;
+        }
+    }
+
+    /// <summary>
+    /// Перечисление, представляющее тип изображения.
+    /// </summary>
+    public enum ImageType
+    {
+        /// <summary>
+        /// Бинарное изображение.
+        /// </summary>
+        Binary,
+
+        /// <summary>
+        /// Полутоновое изображение.
+        /// </summary>
+        Halftone,
+
+        /// <summary>
+        /// Цветное изображение.
+        /// </summary>
+        Color,
+    }
+
+    /// <summary>
+    /// Перечисление, представляющее тип преобразования цвета в полутоновое изображение.
+    /// </summary>
+    public enum ColorToHalftoneCoersionType
+    {
+        /// <summary>
+        /// Преобразование цвета в полутоновое с использованием модели RGB.
+        /// </summary>
+        Rgb,
+
+        /// <summary>
+        /// Преобразование цвета в полутоновое с использованием модели HSB.
+        /// </summary>
+        Hsb
     }
 }

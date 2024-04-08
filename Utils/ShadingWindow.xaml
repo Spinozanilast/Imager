@@ -8,7 +8,7 @@
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="Shading"
     Width="800"
-    Height="450"
+    Height="600"
     ui:ThemeManager.RequestedTheme="Light"
     ui:WindowHelper.UseModernWindowStyle="True"
     mc:Ignorable="d">
@@ -34,13 +34,6 @@
                 HorizontalAlignment="Center"
                 Click="ReturnImageButton_OnClick"
                 Content="Вернуть картинку" />
-            <Button
-                x:Name="SaveImageButton"
-                Margin="5"
-                HorizontalAlignment="Center"
-                Click="SaveImageButton_Click"
-                Content="Сохранить картинку"
-                IsEnabled="True" />
         </StackPanel>
         <DataGrid
             x:Name="DistanceMatrixGridView"
