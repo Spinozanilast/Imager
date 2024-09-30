@@ -1,0 +1,64 @@
+﻿<Window
+    Height="800"
+    SnapsToDevicePixels="True"
+    Title="TexturingWindow"
+    Width="1600"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d"
+    ui:ThemeManager.RequestedTheme="Light"
+    ui:WindowHelper.UseModernWindowStyle="True"
+    x:Class="Imager.Windows.TexturingWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:own="clr-namespace:Imager.Controls"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid x:Name="MainGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="45*" />
+            <RowDefinition Height="45*" />
+            <RowDefinition Height="10*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+        <!--  Tab Views Are code generated  -->
+        <own:ImageTabControl
+            Grid.Column="0"
+            Grid.Row="0"
+            x:Name="FirstView" />
+        <own:ImageTabControl
+            Grid.Column="1"
+            Grid.Row="0"
+            x:Name="SecondView" />
+        <own:ImageTabControl
+            Grid.Column="0"
+            Grid.Row="1"
+            x:Name="ThirdView" />
+        <own:ImageTabControl
+            Grid.Column="1"
+            Grid.Row="1"
+            x:Name="FourthView" />
+        <ui:SimpleStackPanel
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            Grid.Row="2"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal"
+            Spacing="5"
+            VerticalAlignment="Center">
+            <Button
+                Click="CalculateCoOccurenceMatrices_OnClick"
+                Content="Построить матрицы совместной встречаемости"
+                HorizontalAlignment="Stretch"
+                x:Name="CalculateCoOccurenceMatrices" />
+            <Button
+                Click="NormalizeMatrices_OnClick"
+                Content="Нормализовать матрицы"
+                HorizontalAlignment="Stretch"
+                x:Name="NormalizeMatrices" />
+        </ui:SimpleStackPanel>
+    </Grid>
+</Window>

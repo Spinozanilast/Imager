@@ -7,6 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>Imager</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +20,7 @@
 
   <ItemGroup>
     <Folder Include="Converters\" />
+    <Folder Include="Managers\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,7 +46,36 @@
 
   <ItemGroup>
     <Resource Include="icons8-image-48.png" />
-    <Resource Include="Utils\histogramIcon.png" />
+    <Resource Include="Windows\histogramIcon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ImageChannelSplitter\ImageChannelSplitter.csproj" />
+    <ProjectReference Include="..\Imager.Converters\Imager.Converters.csproj" />
+    <ProjectReference Include="..\Imager.Processors\Imager.Processors.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Pages\ShadingWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>Wpf</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Pages\HistogramViewer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>Wpf</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Pages\ConvolutionWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>Wpf</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Pages\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>Wpf</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 
 </Project>

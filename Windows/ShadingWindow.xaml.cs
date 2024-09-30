@@ -1,31 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing.Drawing2D;
+﻿using System.Data;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using Imager.Processors;
+using Imager.Core.GreyscaleChannel;
+using Imager.Processors.DistanceCalculators;
+using Imager.Processors.ShadingProcessor;
 
 namespace Imager.Utils
 {
     /// <summary>
     /// Interaction logic for ShadingWindow.xaml
     /// </summary>
-    public partial class ShadingWindow : Window
+    public partial class ShadingWindow : Window, IImageReturn
     {
-
-        public event Action<BitmapImage> ReturnImage;
+        public event Action<BitmapImage, bool> ReturnImage;
 
         public ShadingWindow(int[,] grayScaleMatrix)
         {
@@ -35,7 +23,8 @@ namespace Imager.Utils
 
         private void InitDistanceMatrix(int[,] grayScaleMatrix)
         {
-            var shadingProcessor = new ShadingProcessor(grayScaleMatrix);
+            var manhattanCalculator = new ManhattanDistanceCalculator(new GrayScaleMatrix(grayScaleMatrix));
+            var shadingProcessor = new ShadingProcessor(manhattanCalculator);
             var distanceMatrix = shadingProcessor.CalculateManhattanDistance();
             var dataTable = new DataTable();
 
@@ -56,8 +45,7 @@ namespace Imager.Utils
             }
 
             DistanceMatrixGridView.ItemsSource = dataTable.DefaultView;
-            ImagePreview.Source = shadingProcessor.ConvertToRgbBitmapSource(distanceMatrix);
-
+            ImagePreview.Source = manhattanCalculator.ConvertToRgbBitmapSource(distanceMatrix);
         }
 
         private void ReturnImageButton_OnClick(object sender, RoutedEventArgs e)
@@ -79,7 +67,8 @@ namespace Imager.Utils
                 bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                 bitmapImage.EndInit();
             }
-            ReturnImage?.Invoke(bitmapImage);
+
+            ReturnImage?.Invoke(bitmapImage, true);
         }
     }
 }

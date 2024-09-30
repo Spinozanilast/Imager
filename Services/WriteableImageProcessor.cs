@@ -1,18 +1,18 @@
 ﻿using System.Drawing;
 using System.Windows.Media.Imaging;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
+using Imager.Core;
 
 namespace Imager.Processors;
 
-public class ImageWriteableProcessor
+public class WriteableImageProcessor
 {
     private WriteableBitmap _writeableBitmap;
     private ImageBrush _imageBrush;
     public Stretch ImageStretches { get; set; }
 
-    public ImageWriteableProcessor(BitmapImage bitmapSource, ImageBrush imageBrush)
+    public WriteableImageProcessor(BitmapImage bitmapSource, ImageBrush imageBrush)
     {
         _writeableBitmap = new WriteableBitmap(bitmapSource);
         _imageBrush = imageBrush;

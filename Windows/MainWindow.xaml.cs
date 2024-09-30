@@ -8,10 +8,11 @@ using ModernToggleSwitch = ModernWpf.Controls.ToggleSwitch;
 using System.Data;
 using System.IO;
 using Imager.Converters;
-using Imager.ImageConverters;
 using Imager.Utils;
+using ImageChannelSplitter.Implementations;
+using Imager.Core;
+using Imager.Windows;
 using MessageBox = ModernWpf.MessageBox;
-using OxyPlot;
 
 namespace Imager
 {
@@ -21,13 +22,10 @@ namespace Imager
     public partial class MainWindow : Window
     {
         // Список предложений для текстового поля типа изображения
-        private readonly List<string> suggestions = new List<string> { "Цветное", "Полутоновое", "Бинарное" };
-
-        // Исходные элементы ComboBox
-        private List<ComboBoxItem> originalItems = new List<ComboBoxItem>();
+        private readonly List<string> suggestions = new() { "Цветное", "Полутоновое", "Бинарное" };
 
         // Массив представлений
-        private DataGrid[] _gridViews;
+        private DataGrid[]? _gridViews;
 
         // Основное изображение
         private BitmapSource _bitmapSourceMain;
@@ -39,10 +37,10 @@ namespace Imager
         private Stretch _currentViewStratch = Stretch.Fill;
 
         // Разделитель каналов изображения
-        private ImageChannelSplitter _imageChannelSplitter;
+        private ImageRgbChannelsSplitter _imageChannelSplitter;
 
         // Процессор для редактирования изображений
-        private ImageWriteableProcessor _imageWriteableProcessor;
+        private WriteableImageProcessor? _writeableImageProcessor;
 
         // Максимальный масштаб для зума
         private double _maxScale = 20.0;
@@ -59,7 +57,15 @@ namespace Imager
         public MainWindow()
         {
             InitializeComponent();
+
+            _imageChannelSplitter = new ImageRgbChannelsSplitter();
+
             this.Loaded += MainWindow_Loaded;
+        }
+        
+        public MainWindow(BitmapImage sourceImage): this()
+        {
+            SetViewsBackgrounds(sourceImage);
         }
 
         /// <summary>
@@ -69,7 +75,7 @@ namespace Imager
         /// <param name="e">Аргументы события.</param>
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            _gridViews = new[] { View2, View3, View4 };
+            _gridViews = new[] { RedView, GreenView, BlueView };
         }
 
         /// <summary>
@@ -79,25 +85,25 @@ namespace Imager
         /// <param name="e">Аргументы события.</param>
         private void ImageDisplayOption_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var selectedOption = (sender as ComboBox).SelectedItem as ComboBoxItem;
-            switch (selectedOption.Content)
+            if (_writeableImageProcessor is null) return;
+            var selectedOption = (sender as ComboBox)?.SelectedItem as ComboBoxItem;
+            switch (selectedOption?.Content)
             {
                 case "Растянуть":
                     ChangeImageStretch(Stretch.Fill);
-                    if (_imageWriteableProcessor != null) _imageWriteableProcessor.ImageStretches = Stretch.Fill;
+                    _writeableImageProcessor.ImageStretches = Stretch.Fill;
                     break;
                 case "Нормальный":
                     ChangeImageStretch(Stretch.None);
-                    if (_imageWriteableProcessor != null) _imageWriteableProcessor.ImageStretches = Stretch.None;
+                    _writeableImageProcessor.ImageStretches = Stretch.None;
                     break;
                 case "Центрировать":
                     ChangeImageStretch(Stretch.Uniform);
-                    if (_imageWriteableProcessor != null) _imageWriteableProcessor.ImageStretches = Stretch.Uniform;
+                    _writeableImageProcessor.ImageStretches = Stretch.Uniform;
                     break;
                 case "Заполнить":
                     ChangeImageStretch(Stretch.UniformToFill);
-                    if (_imageWriteableProcessor != null)
-                        _imageWriteableProcessor.ImageStretches = Stretch.UniformToFill;
+                    _writeableImageProcessor.ImageStretches = Stretch.UniformToFill;
                     break;
                 default:
                     ChangeImageStretch(Stretch.None);
@@ -111,17 +117,17 @@ namespace Imager
         /// <param name="stretch">Режим отображения изображения.</param>
         private void ChangeImageStretch(Stretch stretch)
         {
-            if (_gridViews == null) return;
+            if (_gridViews is null) return;
 
             foreach (var gridView in _gridViews)
             {
-                if (gridView != null && gridView.Background is ImageBrush imageBrushGridViewBackground)
+                if (gridView is not null && gridView.Background is ImageBrush imageBrushGridViewBackground)
                 {
                     imageBrushGridViewBackground.Stretch = stretch;
                 }
             }
 
-            if (View1 != null && View1.Background is ImageBrush imageBrush)
+            if (MainView != null && MainView.Background is ImageBrush imageBrush)
             {
                 imageBrush.Stretch = stretch;
             }
@@ -152,15 +158,15 @@ namespace Imager
             _bitmapSourceMain = image;
 
             SetViewsBackgrounds(image);
-            lblResolution.Content = Math.Truncate(image.Width) + " x " + Math.Truncate(image.Height);
+            LblResolution.Content = Math.Truncate(image.Width) + " x " + Math.Truncate(image.Height);
             ChangeImageStretch(_currentViewStratch);
 
             var imageTypeData = ImageTypeDefiner.DetermineImageType(image);
             _currentImageType = imageTypeData.Item1;
 
             ImageTypeComboBox.IsEnabled = true;
-            textBoxImageType.Visibility = Visibility.Visible;
-            textBoxImageType.Text = imageTypeData.Item2;
+            TextBoxImageType.Visibility = Visibility.Visible;
+            TextBoxImageType.Text = imageTypeData.Item2;
             ImageViewModeToggle.IsEnabled = true;
             SaveImageButton.IsEnabled = true;
         }
@@ -168,23 +174,22 @@ namespace Imager
         /// <summary>
         /// Устанавливает фоновые изображения для представлений.
         /// </summary>
-        /// <param name="firstViewBackgroundImage">Фоновое изображение для первого представления.</param>
-        private void SetViewsBackgrounds(BitmapImage firstViewBackgroundImage)
+        /// <param name="sourceImage">Фоновое изображение для первого представления.</param>
+        private void SetViewsBackgrounds(BitmapImage sourceImage)
         {
-            _imageChannelSplitter = new ImageChannelSplitter(firstViewBackgroundImage);
-            _imageChannelSplitter.ProcessBitmapSource();
+            _imageChannelSplitter.ProcessBitmapSource(sourceImage);
 
-            View1.Background = new ImageBrush(firstViewBackgroundImage);
-            View2.Background = new ImageBrush(_imageChannelSplitter.RedChannel);
-            View3.Background = new ImageBrush(_imageChannelSplitter.GreenChannel);
-            View4.Background = new ImageBrush(_imageChannelSplitter.BlueChannel);
+            MainView.Background = new ImageBrush(sourceImage);
+            RedView.Background = new ImageBrush(_imageChannelSplitter.RedChannel);
+            GreenView.Background = new ImageBrush(_imageChannelSplitter.GreenChannel);
+            BlueView.Background = new ImageBrush(_imageChannelSplitter.BlueChannel);
 
             var st = new ScaleTransform();
-            View1.LayoutTransform = st;
+            MainView.LayoutTransform = st;
 
-            View1.MouseWheel += (sender, e) =>
+            MainView.MouseWheel += (sender, e) =>
             {
-                if (!_enableZoom) return; 
+                if (!_enableZoom) return;
 
                 if (e.Delta > 0 && st.ScaleX < _maxScale)
                 {
@@ -198,7 +203,8 @@ namespace Imager
                 }
             };
 
-            _imageWriteableProcessor = new ImageWriteableProcessor(firstViewBackgroundImage, View1.Background as ImageBrush);
+            _writeableImageProcessor =
+                new WriteableImageProcessor(sourceImage, MainView.Background as ImageBrush);
         }
 
         /// <summary>
@@ -209,7 +215,6 @@ namespace Imager
         private void ClearAllViewsButton_Click(object sender, RoutedEventArgs e)
         {
             ClearAllViews();
-
         }
 
         private void ClearAllViews()
@@ -221,14 +226,14 @@ namespace Imager
                 ImageViewModeToggle.IsOn = false;
             }
 
-            View1.Background = null;
+            MainView.Background = null;
             GreyScaleGrid.ItemsSource = null;
-            textBoxImageType.Visibility = Visibility.Collapsed;
+            TextBoxImageType.Visibility = Visibility.Collapsed;
             ImageTypeComboBox.IsEnabled = false;
             ImageTypeComboBox.SelectedItem = null;
             ImageViewModeToggle.IsEnabled = false;
             SaveImageButton.IsEnabled = false;
-            lblResolution.Content = string.Empty;
+            LblResolution.Content = string.Empty;
         }
 
         /// <summary>
@@ -252,18 +257,20 @@ namespace Imager
             switch (toggleSwitchIsOn)
             {
                 case true:
-                    DisplayMatrixInGridView(View2, _imageChannelSplitter.ChannelMatrices.RedMatrix);
-                    DisplayMatrixInGridView(View3, _imageChannelSplitter.ChannelMatrices.GreenMatrix);
-                    DisplayMatrixInGridView(View4, _imageChannelSplitter.ChannelMatrices.BlueMatrix);
+                    DisplayMatrixInGridView(RedView, _imageChannelSplitter.ChannelsMatrices.RedMatrix);
+                    DisplayMatrixInGridView(GreenView, _imageChannelSplitter.ChannelsMatrices.GreenMatrix);
+                    DisplayMatrixInGridView(BlueView, _imageChannelSplitter.ChannelsMatrices.BlueMatrix);
                     if (GreyScaleGrid.ItemsSource == null)
                     {
-                        DisplayMatrixInGridView(GreyScaleGrid, _imageChannelSplitter.ChannelMatrices.GreyScaleMatrix);
+                        DisplayMatrixInGridView(GreyScaleGrid,
+                            _imageChannelSplitter.ChannelsMatrices.GrayScaleMatrix.Matrix);
                     }
+
                     break;
                 case false:
-                    View2.ItemsSource = null;
-                    View3.ItemsSource = null;
-                    View4.ItemsSource = null;
+                    RedView.ItemsSource = null;
+                    GreenView.ItemsSource = null;
+                    BlueView.ItemsSource = null;
                     break;
             }
         }
@@ -275,9 +282,9 @@ namespace Imager
         /// <param name="matrix">Матрица для отображения.</param>
         private void DisplayMatrixInGridView(DataGrid dataGrid, int[,] matrix)
         {
-            View2.CellEditEnding += DataGridRed_CellEditEnding;
-            View3.CellEditEnding += DataGridGreen_CellEditEnding;
-            View4.CellEditEnding += DataGridBlue_CellEditEnding;
+            RedView.CellEditEnding += DataGridRed_CellEditEnding;
+            GreenView.CellEditEnding += DataGridGreen_CellEditEnding;
+            BlueView.CellEditEnding += DataGridBlue_CellEditEnding;
             GreyScaleGrid.CellEditEnding += GreyScaleGrid_CellEditEnding;
 
             var dataTable = new DataTable();
@@ -310,10 +317,11 @@ namespace Imager
         {
             var newValue = ((TextBox)e.EditingElement).Text;
             newValue = string.IsNullOrEmpty(newValue) ? "0" : newValue;
-            _imageWriteableProcessor.UpdateBlackAndWhite(e.Column.DisplayIndex, e.Row.GetIndex(),
-                byte.Parse(newValue), View1);
-            _imageChannelSplitter.UpdateMatrix(ChannelType.RedChannel, e.Column.DisplayIndex, e.Row.GetIndex(), byte.Parse(newValue), true);
-            _imageChannelSplitter.OriginalImage = BitmapSourceFromBrush((ImageBrush)View1.Background);
+            _writeableImageProcessor.UpdateBlackAndWhite(e.Column.DisplayIndex, e.Row.GetIndex(),
+                byte.Parse(newValue), MainView);
+            _imageChannelSplitter.UpdateMatrix(ChannelType.RedChannel, e.Column.DisplayIndex, e.Row.GetIndex(),
+                byte.Parse(newValue), true);
+            _imageChannelSplitter.OriginalImage = BitmapSourceFromBrush((ImageBrush)MainView.Background);
         }
 
         /// <summary>
@@ -358,11 +366,12 @@ namespace Imager
             {
                 var newValue = ((TextBox)e.EditingElement).Text;
                 newValue = string.IsNullOrEmpty(newValue) ? "0" : newValue;
-                _imageWriteableProcessor.UpdatePixelChannel(e.Column.DisplayIndex, e.Row.GetIndex(),
+                _writeableImageProcessor.UpdatePixelChannel(e.Column.DisplayIndex, e.Row.GetIndex(),
                     byte.Parse(newValue),
-                    channelType, View1);
-                _imageChannelSplitter.UpdateMatrix(channelType, e.Column.DisplayIndex, e.Row.GetIndex(),byte.Parse(newValue));
-                _imageChannelSplitter.OriginalImage = BitmapSourceFromBrush((ImageBrush)View1.Background);
+                    channelType, MainView);
+                _imageChannelSplitter.UpdateMatrix(channelType, e.Column.DisplayIndex, e.Row.GetIndex(),
+                    byte.Parse(newValue));
+                _imageChannelSplitter.OriginalImage = BitmapSourceFromBrush((ImageBrush)MainView.Background);
             }
             catch (Exception)
             {
@@ -377,8 +386,8 @@ namespace Imager
         /// <param name="e">Аргументы события.</param>
         private void SaveImageButton_Click(object sender, RoutedEventArgs e)
         {
-            var imageSaver = new ImageSaver(); 
-            imageSaver.SaveImageBrushToFile((ImageBrush)View1.Background);
+            var imageSaver = new ImageSaver();
+            imageSaver.SaveImageBrushToFile((ImageBrush)MainView.Background);
         }
 
         /// <summary>
@@ -388,14 +397,17 @@ namespace Imager
         /// <param name="e">Аргументы события.</param>
         private void HistogramViewOpenButton_Click(object sender, RoutedEventArgs e)
         {
-            if (View1.Background == null)
+            if (MainView.Background == null)
             {
                 MessageBox.Show(this, "Load picture");
                 return;
             }
+
             var bitmapImage =
-                ImageBrushToBitmapImageConverter.ConvertImageBrushToBitmapImage((ImageBrush)View1.Background);
-            HistogramViewer histogramViewer = new HistogramViewer(ImageBrushToBitmapImageConverter.ConvertImageBrushToBitmapImage((ImageBrush)View1.Background));
+                ImageBrushToBitmapImageConverter.ConvertImageBrushToBitmapImage((ImageBrush)MainView.Background);
+            HistogramViewerWindow histogramViewer =
+                new HistogramViewerWindow(
+                    ImageBrushToBitmapImageConverter.ConvertImageBrushToBitmapImage((ImageBrush)MainView.Background));
             histogramViewer.Show();
         }
 
@@ -433,8 +445,9 @@ namespace Imager
                 MessageBox.Show(this, "Initialize matrix view");
                 return;
             }
+
             GreyScaleGrid.ItemsSource = null;
-            DisplayMatrixInGridView(GreyScaleGrid, _imageChannelSplitter.ChannelMatrices.GreyScaleMatrix);
+            DisplayMatrixInGridView(GreyScaleGrid, _imageChannelSplitter.ChannelsMatrices.GrayScaleMatrix.Matrix);
         }
 
         /// <summary>
@@ -444,8 +457,7 @@ namespace Imager
         /// <param name="e">Аргументы события.</param>
         private void ShadingWindowOpenButton_OnClickButton_Click(object sender, RoutedEventArgs e)
         {
-            // Проверяем, является ли изображение двоичным и включен ли режим матрицы
-            if (_imageChannelSplitter == null || !_imageChannelSplitter.IsBinary)
+            if (!_imageChannelSplitter.IsBinary)
             {
                 MessageBox.Show(this, "Изображение не является двоичным");
                 return;
@@ -457,24 +469,36 @@ namespace Imager
                 return;
             }
 
-            // Открываем окно с теневыми эффектами
-            var shadingWindow = new ShadingWindow(_imageChannelSplitter.ChannelMatrices.GreyScaleMatrix);
-            shadingWindow.ReturnImage += HandleSelectedImage;
-            shadingWindow.Show();
+            var shadingWindow = new ShadingWindow(_imageChannelSplitter.ChannelsMatrices.GrayScaleMatrix.Matrix);
+            shadingWindow.ReturnImage += HandleSelectedImageFromSubWindow;
+            shadingWindow.ShowDialog();
         }
 
         /// <summary>
-        /// Обработчик получения выбранного изображения из окна с теневыми эффектами.
+        /// Обработчик получения выбранного изображения из окна.
         /// </summary>
         /// <param name="image">Выбранное изображение.</param>
-        private void HandleSelectedImage(BitmapImage image)
+        private void HandleSelectedImageFromSubWindow(BitmapImage image, bool shading = true)
         {
-            // Очищаем все представления и устанавливаем новое изображение
             ClearAllViews();
             SetViewsBackgrounds(image);
             _bitmapSourceMain = image;
-            _currentImageType = ImageType.Halftone;
-            textBoxImageType.Text = "Полутоновое";
+
+            if (shading)
+            {
+                _currentImageType = ImageType.Halftone;
+                TextBoxImageType.Text = "Полутоновое";
+            }
+
+            LblResolution.Content = Math.Truncate(image.Width) + " x " + Math.Truncate(image.Height);
+            ChangeImageStretch(_currentViewStratch);
+
+            var imageTypeData = ImageTypeDefiner.DetermineImageType(image);
+            _currentImageType = imageTypeData.Item1;
+
+            ImageTypeComboBox.IsEnabled = true;
+            TextBoxImageType.Visibility = Visibility.Visible;
+            TextBoxImageType.Text = imageTypeData.Item2;
             ImageViewModeToggle.IsEnabled = true;
             SaveImageButton.IsEnabled = true;
         }
@@ -525,15 +549,15 @@ namespace Imager
                     return;
 
                 string selectedConversion = selectedItem.Content.ToString();
-                var coersionType = ColorToHalftoneCoersionType.Rgb;
+                var coersionType = ColorToHalftoneCoersionFromType.Rgb;
 
                 switch (selectedConversion)
                 {
                     case "RGB":
-                        coersionType = ColorToHalftoneCoersionType.Rgb;
+                        coersionType = ColorToHalftoneCoersionFromType.Rgb;
                         break;
                     case "HSB":
-                        coersionType = ColorToHalftoneCoersionType.Hsb;
+                        coersionType = ColorToHalftoneCoersionFromType.Hsb;
                         break;
                 }
 
@@ -556,7 +580,7 @@ namespace Imager
         /// </summary>
         /// <param name="imageType">Тип изображения.</param>
         /// <param name="coersionType">Тип преобразования цвета в полутоновое изображение (необязательный).</param>
-        private void UpdateImageType(ImageType imageType, ColorToHalftoneCoersionType? coersionType)
+        private void UpdateImageType(ImageType imageType, ColorToHalftoneCoersionFromType? coersionType)
         {
             var imageConverterFactory = ImageConverterFactory.GetConverter(imageType, coersionType);
             var image = imageConverterFactory.Convert(_bitmapSourceMain, _currentImageType);
@@ -579,7 +603,7 @@ namespace Imager
             SetViewsBackgrounds(bitmapImage);
             _bitmapSourceMain = image;
             ChangeImageStretch(_currentViewStratch);
-            textBoxImageType.Text = coersionType != null ? "Полутоновое" : "Бинарное";
+            TextBoxImageType.Text = coersionType != null ? "Полутоновое" : "Бинарное";
             _currentImageType = imageType;
         }
 
@@ -590,7 +614,7 @@ namespace Imager
         /// <param name="e">Аргументы события.</param>
         private void LblImageType_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            string userInput = textBoxImageType.Text.ToLower();
+            string userInput = TextBoxImageType.Text.ToLower();
             List<string> filteredSuggestions = new List<string>();
 
             foreach (string suggestion in suggestions)
@@ -635,7 +659,7 @@ namespace Imager
         {
             if (SuggestionsListBox.SelectedItem != null)
             {
-                textBoxImageType.Text = SuggestionsListBox.SelectedItem.ToString();
+                TextBoxImageType.Text = SuggestionsListBox.SelectedItem.ToString();
                 SuggestionsListBox.Visibility = Visibility.Collapsed;
             }
         }
@@ -659,42 +683,27 @@ namespace Imager
         {
             SuggestionsListBox.Visibility = Visibility.Visible;
         }
-    }
 
-    /// <summary>
-    /// Перечисление, представляющее тип изображения.
-    /// </summary>
-    public enum ImageType
-    {
-        /// <summary>
-        /// Бинарное изображение.
-        /// </summary>
-        Binary,
+        private void MedianMaskConvolutionButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (_imageChannelSplitter != null)
+            {
+                var convolutionWindow = new ConvolutionWindow(_imageChannelSplitter.ChannelsMatrices.RedMatrix,
+                    _imageChannelSplitter.ChannelsMatrices.GreenMatrix,
+                    _imageChannelSplitter.ChannelsMatrices.BlueMatrix);
+                convolutionWindow.ReturnImage += HandleSelectedImageFromSubWindow;
+                convolutionWindow.Show();
+            }
+            else
+            {
+                MessageBox.Show(this, "Open image");
+            }
+        }
 
-        /// <summary>
-        /// Полутоновое изображение.
-        /// </summary>
-        Halftone,
-
-        /// <summary>
-        /// Цветное изображение.
-        /// </summary>
-        Color,
-    }
-
-    /// <summary>
-    /// Перечисление, представляющее тип преобразования цвета в полутоновое изображение.
-    /// </summary>
-    public enum ColorToHalftoneCoersionType
-    {
-        /// <summary>
-        /// Преобразование цвета в полутоновое с использованием модели RGB.
-        /// </summary>
-        Rgb,
-
-        /// <summary>
-        /// Преобразование цвета в полутоновое с использованием модели HSB.
-        /// </summary>
-        Hsb
+        private void TexturingButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            var texturingWindow = new TexturingWindow();
+            texturingWindow.Show();
+        }
     }
 }

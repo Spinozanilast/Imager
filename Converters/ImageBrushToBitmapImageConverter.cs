@@ -11,7 +11,7 @@ public class ImageBrushToBitmapImageConverter
     /// Конвертирует ImageBrush в BitmapImage.
     /// </summary>
     /// <param name="imageBrush">ImageBrush для конвертации.</param>
-    /// <returns>BitmapImage, полученный из ImageBrush.</returns>
+    /// <returns>BitmapImage, полученный из ImageBrush.</returnsa>
     public static BitmapImage ConvertImageBrushToBitmapImage(ImageBrush imageBrush)
     {
         BitmapImage bitmapImage;

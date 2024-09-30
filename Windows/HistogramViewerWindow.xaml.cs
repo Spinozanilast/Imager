@@ -5,15 +5,16 @@ using OxyPlot.Series;
 using OxyPlot;
 using OxyPlot.Wpf;
 using System.IO;
+using Imager.Core;
 
 namespace Imager.Utils
 {
     /// <summary>
-    /// Interaction logic for HistogramViewer.xaml
+    /// Interaction logic for HistogramViewerWindow.xaml
     /// </summary>
-    public partial class HistogramViewer : Window
+    public partial class HistogramViewerWindow : Window
     {
-        public HistogramViewer(BitmapImage image)
+        public HistogramViewerWindow(BitmapImage image)
         {
             InitializeComponent();
 

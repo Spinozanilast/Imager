@@ -1,0 +1,245 @@
+﻿<Window
+    Height="700"
+    Icon="/icons8-image-48.png"
+    SnapsToDevicePixels="True"
+    Title="Imager"
+    Width="1400"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d"
+    ui:ThemeManager.RequestedTheme="Light"
+    ui:WindowHelper.UseModernWindowStyle="True"
+    x:Class="Imager.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="90*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="92*" />
+            <RowDefinition Height="8*" />
+        </Grid.RowDefinitions>
+        <Border
+            BorderBrush="Black"
+            BorderThickness="1"
+            Grid.Column="0"
+            Grid.Row="0"
+            Margin="5,10"
+            Padding="4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <GroupBox HorizontalAlignment="Stretch">
+                    <GroupBox.Header>Работа с I/O</GroupBox.Header>
+                    <StackPanel>
+                        <ui:ToggleSwitch
+                            HorizontalAlignment="Center"
+                            IsEnabled="False"
+                            OffContent="Режим просмотра"
+                            OnContent="Режим матриц"
+                            Toggled="ImageViewModeToggle_OnToggled"
+                            VerticalAlignment="Center"
+                            x:Name="ImageViewModeToggle">
+                            <ui:ToggleSwitch.Header>Переключение типа вывода (матрицы/картинки)</ui:ToggleSwitch.Header>
+                        </ui:ToggleSwitch>
+                        <Button
+                            Click="OpenFileButton_OnClick"
+                            Content="Открыть файл"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,5" />
+                        <Button
+                            Click="SaveImageButton_Click"
+                            Content="Сохранить картинку"
+                            HorizontalAlignment="Stretch"
+                            IsEnabled="False"
+                            x:Name="SaveImageButton" />
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Grid.Row="1" HorizontalAlignment="Stretch">
+                    <GroupBox.Header>Функции</GroupBox.Header>
+                    <ui:SimpleStackPanel Orientation="Vertical" Spacing="5">
+                        <Button
+                            Click="HistogramViewOpenButton_Click"
+                            Content="Вывести гистограмму"
+                            HorizontalAlignment="Stretch"
+                            x:Name="HistogramViewOpenButton" />
+                        <Button
+                            Click="ShadingWindowOpenButton_OnClickButton_Click"
+                            Content="Открыть окно для растушёвки"
+                            HorizontalAlignment="Stretch"
+                            x:Name="ShadingWindowOpenButton" />
+                        <Button
+                            Click="MedianMaskConvolutionButton_OnClick"
+                            Content="Произвести свёртку изображения"
+                            HorizontalAlignment="Stretch"
+                            x:Name="MedianMaskConvolutionButton" />
+                        <Button
+                            Click="UpdateGreyscaleMatrixButton_Click"
+                            Content="Обновить матрицу градаций серого"
+                            HorizontalAlignment="Stretch"
+                            x:Name="UpdateGreyscaleMatrixButton" />
+                        <ui:NavigationViewItemSeparator />
+                        <Button
+                            Click="TexturingButton_OnClick"
+                            Content="Текстурирование"
+                            HorizontalAlignment="Stretch"
+                            x:Name="TexturingButton" />
+                    </ui:SimpleStackPanel>
+                </GroupBox>
+                <GroupBox Grid.Row="2" HorizontalAlignment="Stretch">
+                    <GroupBox.Header>Манипуляции выводом</GroupBox.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel HorizontalAlignment="Center">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label
+                                    Content="Тип изображения:"
+                                    Grid.Column="0"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,5,0"
+                                    VerticalAlignment="Center" />
+                                <ComboBox
+                                    Grid.Column="1"
+                                    IsEnabled="False"
+                                    SelectionChanged="ImageTypeComboBox_SelectionChanged"
+                                    VerticalAlignment="Center"
+                                    Width="200"
+                                    x:Name="ImageTypeComboBox">
+                                    <ComboBoxItem Content="Полутоновое" />
+                                    <ComboBoxItem Content="Бинарное" />
+                                </ComboBox>
+                                <Popup
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="2"
+                                    IsOpen="False"
+                                    Placement="Bottom"
+                                    PlacementTarget="{Binding ElementName=ImageTypeComboBox}"
+                                    x:Name="ConversionOptionsPopup">
+                                    <Border
+                                        Background="White"
+                                        BorderBrush="Black"
+                                        BorderThickness="1"
+                                        Padding="5">
+                                        <StackPanel>
+                                            <TextBlock Margin="0,0,0,5" Text="Выберите тип преобразования:" />
+                                            <ComboBox SelectionChanged="ConversionComboBox_SelectionChanged" x:Name="ConversionComboBox">
+                                                <ComboBoxItem Content="RGB" />
+                                                <ComboBoxItem Content="HSB" />
+                                            </ComboBox>
+                                        </StackPanel>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                            <Button
+                                Click="ClearAllViewsButton_Click"
+                                Content="Очистить всё"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,5,0,0" />
+                        </StackPanel>
+                    </Grid>
+                </GroupBox>
+            </Grid>
+        </Border>
+        <Grid
+            Grid.Column="1"
+            Grid.Row="0"
+            Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <TabControl BorderThickness="1" Margin="5">
+                <TabItem Header="Оригинальное изображение">
+                    <ui:GridView ScrollViewer.VerticalScrollBarVisibility="Disabled" x:Name="MainView" />
+                </TabItem>
+                <TabItem Header="Матрица чёрного и белого">
+                    <DataGrid Visibility="Collapsed" x:Name="GreyScaleGrid" />
+                </TabItem>
+            </TabControl>
+            <DataGrid
+                BorderBrush="Gray"
+                BorderThickness="1"
+                CanUserResizeColumns="False"
+                Grid.Column="1"
+                Grid.Row="0"
+                Margin="5"
+                x:Name="RedView" />
+            <DataGrid
+                BorderBrush="Gray"
+                BorderThickness="1"
+                CanUserResizeColumns="False"
+                Grid.Column="0"
+                Grid.Row="1"
+                Margin="5"
+                x:Name="GreenView" />
+            <DataGrid
+                BorderBrush="Gray"
+                BorderThickness="1"
+                CanUserResizeColumns="False"
+                Grid.Column="1"
+                Grid.Row="1"
+                Margin="5"
+                x:Name="BlueView" />
+        </Grid>
+        <Border
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            Grid.Row="1">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Stretch">
+                <Label
+                    AutomationProperties.HelpText="Resolution"
+                    Margin="5,0,0,0"
+                    ToolTip="Resolution"
+                    VerticalContentAlignment="Center"
+                    x:Name="LblResolution" />
+                <TextBox
+                    AutomationProperties.HelpText="Image Type"
+                    GotFocus="TextBoxImageType_OnGotFocus"
+                    LostFocus="TextBoxImageType_OnLostFocus"
+                    Margin="10"
+                    Padding="5"
+                    TextChanged="LblImageType_OnTextChanged"
+                    VerticalContentAlignment="Center"
+                    Visibility="Collapsed"
+                    x:Name="TextBoxImageType" />
+                <ListBox
+                    HorizontalAlignment="Left"
+                    SelectionChanged="ListBox_SelectionChanged"
+                    VerticalAlignment="Top"
+                    VerticalContentAlignment="Stretch"
+                    x:Name="SuggestionsListBox" />
+                <ComboBox
+                    HorizontalAlignment="Right"
+                    Margin="5,0,0,0"
+                    SelectionChanged="ImageDisplayOption_OnSelectionChanged"
+                    VerticalAlignment="Center"
+                    VerticalContentAlignment="Stretch"
+                    x:Name="ImageDisplayOption">
+                    <ComboBoxItem Content="Растянуть" IsSelected="True" />
+                    <ComboBoxItem Content="Нормальный" />
+                    <ComboBoxItem Content="Центрировать" />
+                </ComboBox>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

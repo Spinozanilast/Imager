@@ -1,4 +1,5 @@
 ﻿using System.Windows.Media.Imaging;
+using Imager.Core;
 
 namespace Imager.Processors;
 
@@ -6,24 +7,22 @@ public static class ImageTypeDefiner
 {
     public static Tuple<ImageType, string> DetermineImageType(BitmapSource bitmap)
     {
-        int width = bitmap.PixelWidth;
-        int height = bitmap.PixelHeight;
-        int stride = width * ((bitmap.Format.BitsPerPixel + 7) / 8);
-        int dataSize = height * stride;
-        byte[] pixelData = new byte[dataSize];
+        var width = bitmap.PixelWidth;
+        var height = bitmap.PixelHeight;
+        var stride = width * ((bitmap.Format.BitsPerPixel + 7) / 8);
+        var dataSize = height * stride;
+        var pixelData = new byte[dataSize];
         bitmap.CopyPixels(pixelData, stride, 0);
 
-        // Calculate unique pixel values
         var uniquePixelValues = new HashSet<byte>();
 
-        // Check if all channels have the same value
-        bool isGrayscale = true;
+        var isGrayscale = true;
 
-        for (int i = 0; i < pixelData.Length; i += 4)
+        for (var i = 0; i < pixelData.Length; i += 4)
         {
-            byte red = pixelData[i];
-            byte green = pixelData[i + 1];
-            byte blue = pixelData[i + 2];
+            var red = pixelData[i];
+            var green = pixelData[i + 1];
+            var blue = pixelData[i + 2];
 
             uniquePixelValues.Add(red);
             uniquePixelValues.Add(green);
