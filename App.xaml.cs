@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using ImageChannelSplitter.Implementations;
+using Imager.Windows;
 
 namespace Imager
 {

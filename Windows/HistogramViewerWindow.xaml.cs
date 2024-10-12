@@ -1,13 +1,13 @@
 ﻿using System.Drawing;
+using System.IO;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using OxyPlot.Series;
-using OxyPlot;
-using OxyPlot.Wpf;
-using System.IO;
 using Imager.Core;
+using OxyPlot;
+using OxyPlot.Series;
+using OxyPlot.Wpf;
 
-namespace Imager.Utils
+namespace Imager.Windows
 {
     /// <summary>
     /// Interaction logic for HistogramViewerWindow.xaml

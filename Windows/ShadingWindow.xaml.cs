@@ -5,8 +5,9 @@ using System.Windows.Media.Imaging;
 using Imager.Core.GreyscaleChannel;
 using Imager.Processors.DistanceCalculators;
 using Imager.Processors.ShadingProcessor;
+using Imager.Utils;
 
-namespace Imager.Utils
+namespace Imager.Windows
 {
     /// <summary>
     /// Interaction logic for ShadingWindow.xaml

@@ -2,8 +2,9 @@
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Imager.Utils;
 
-namespace Imager.Utils
+namespace Imager.Windows
 {
     /// <summary>
     /// Interaction logic for ConvolutionWindow.xaml

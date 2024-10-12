@@ -19,7 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Converters\" />
     <Folder Include="Managers\" />
   </ItemGroup>
 
@@ -53,6 +52,7 @@
     <ProjectReference Include="..\ImageChannelSplitter\ImageChannelSplitter.csproj" />
     <ProjectReference Include="..\Imager.Converters\Imager.Converters.csproj" />
     <ProjectReference Include="..\Imager.Processors\Imager.Processors.csproj" />
+    <ProjectReference Include="..\Imager.Utils\Imager.Utils.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,20 +1,22 @@
-﻿using Microsoft.Win32;
+﻿using System.Data;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Imager.Processors;
-using ModernToggleSwitch = ModernWpf.Controls.ToggleSwitch;
-using System.Data;
-using System.IO;
-using Imager.Converters;
-using Imager.Utils;
 using ImageChannelSplitter.Implementations;
+using Imager.Converters;
 using Imager.Core;
-using Imager.Windows;
+using Imager.Processors.Processors;
+using Imager.Services;
+using Imager.Utils;
+using Imager.Utils.Files;
+using Imager.Utils.FormatConverters;
+using Microsoft.Win32;
+using ModernToggleSwitch = ModernWpf.Controls.ToggleSwitch;
 using MessageBox = ModernWpf.MessageBox;
 
-namespace Imager
+namespace Imager.Windows
 {
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
@@ -702,7 +704,7 @@ namespace Imager
 
         private void TexturingButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var texturingWindow = new TexturingWindow();
+            var texturingWindow = new TexturingWindow(new DataTableFromMatrixCreator());
             texturingWindow.Show();
         }
     }

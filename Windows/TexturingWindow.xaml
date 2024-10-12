@@ -47,18 +47,54 @@
             Grid.Row="2"
             HorizontalAlignment="Center"
             Orientation="Horizontal"
-            Spacing="5"
+            Spacing="10"
             VerticalAlignment="Center">
+            <Label
+                Content="Таблица коэффициентов:"
+                FontSize="18"
+                VerticalAlignment="Center" />
+            <DataGrid x:Name="CfsDataGrid" />
+            <Label
+                Content="Угол:"
+                FontSize="18"
+                VerticalAlignment="Center" />
+            <ComboBox VerticalAlignment="Center" x:Name="AngleComboBox">
+                <ComboBox.Items>
+                    <ComboBoxItem Content="0" />
+                    <ComboBoxItem Content="45" />
+                    <ComboBoxItem Content="90" IsSelected="True" />
+                    <ComboBoxItem Content="135" />
+                    <ComboBoxItem Content="180" />
+                    <ComboBoxItem Content="225" />
+                    <ComboBoxItem Content="270" />
+                    <ComboBoxItem Content="315" />
+                    <ComboBoxItem Content="360" />
+                </ComboBox.Items>
+            </ComboBox>
+            <Label
+                Content="Расстояние:"
+                FontSize="18"
+                VerticalAlignment="Center" />
+            <ui:NumberBox
+                Maximum="10"
+                Minimum="1"
+                SpinButtonPlacementMode="Compact"
+                Value="1"
+                VerticalAlignment="Center"
+                x:Name="DistanceNumberBox" />
             <Button
                 Click="CalculateCoOccurenceMatrices_OnClick"
                 Content="Построить матрицы совместной встречаемости"
                 HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
                 x:Name="CalculateCoOccurenceMatrices" />
+            <ui:AppBarSeparator />
             <Button
                 Click="NormalizeMatrices_OnClick"
                 Content="Нормализовать матрицы"
                 HorizontalAlignment="Stretch"
                 x:Name="NormalizeMatrices" />
+
         </ui:SimpleStackPanel>
     </Grid>
 </Window>
