@@ -16,10 +16,10 @@ using GridView = ModernWpf.Controls.GridView;
 
 namespace Imager.Controls;
 
-public partial class ImageTabControl : UserControl
+public partial class NumberedImageTabControl : UserControl
 {
     public static readonly DependencyProperty IsAnimationEnabledProperty =
-        DependencyProperty.Register("IsAnimationEnabled", typeof(bool), typeof(ImageTabControl),
+        DependencyProperty.Register("IsAnimationEnabled", typeof(bool), typeof(NumberedImageTabControl),
             new PropertyMetadata(true));
 
     private readonly ContentDialog _contentDialog;
@@ -34,7 +34,7 @@ public partial class ImageTabControl : UserControl
 
     public ImageRgbChannelsSplitter? ImageChannelSplitter => _imageRgbChannelsSplitter;
 
-    public ImageTabControl()
+    public NumberedImageTabControl()
     {
         InitializeComponent();
 
@@ -66,7 +66,7 @@ public partial class ImageTabControl : UserControl
         var image = new BitmapImage(new Uri(dialog.FileName));
 
         var imageType = ImageTypeDefiner.DetermineImageType(image).Item1;
-        
+
         if (imageType != ImageType.Halftone)
         {
             var result = await _contentDialog.ShowAsync();

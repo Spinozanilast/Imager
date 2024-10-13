@@ -24,7 +24,7 @@ namespace Imager.Windows
 
         private void InitDistanceMatrix(int[,] grayScaleMatrix)
         {
-            var manhattanCalculator = new ManhattanDistanceCalculator(new GrayScaleMatrix(grayScaleMatrix));
+            var manhattanCalculator = new ManhattanDistanceCalculator(grayScaleMatrix);
             var shadingProcessor = new ShadingProcessor(manhattanCalculator);
             var distanceMatrix = shadingProcessor.CalculateManhattanDistance();
             var dataTable = new DataTable();

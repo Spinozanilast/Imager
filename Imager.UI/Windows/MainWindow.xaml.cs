@@ -265,7 +265,7 @@ namespace Imager.Windows
                     if (GreyScaleGrid.ItemsSource == null)
                     {
                         DisplayMatrixInGridView(GreyScaleGrid,
-                            _imageChannelSplitter.ChannelsMatrices.GrayScaleMatrix.Matrix);
+                            _imageChannelSplitter.ChannelsMatrices.GrayScaleMatrix);
                     }
 
                     break;
@@ -449,7 +449,7 @@ namespace Imager.Windows
             }
 
             GreyScaleGrid.ItemsSource = null;
-            DisplayMatrixInGridView(GreyScaleGrid, _imageChannelSplitter.ChannelsMatrices.GrayScaleMatrix.Matrix);
+            DisplayMatrixInGridView(GreyScaleGrid, _imageChannelSplitter.ChannelsMatrices.GrayScaleMatrix);
         }
 
         /// <summary>
@@ -471,7 +471,7 @@ namespace Imager.Windows
                 return;
             }
 
-            var shadingWindow = new ShadingWindow(_imageChannelSplitter.ChannelsMatrices.GrayScaleMatrix.Matrix);
+            var shadingWindow = new ShadingWindow(_imageChannelSplitter.ChannelsMatrices.GrayScaleMatrix);
             shadingWindow.ReturnImage += HandleSelectedImageFromSubWindow;
             shadingWindow.ShowDialog();
         }
@@ -704,7 +704,7 @@ namespace Imager.Windows
 
         private void TexturingButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var texturingWindow = new TexturingWindow(new DataTableFromMatrixCreator());
+            var texturingWindow = new TexturingWindow();
             texturingWindow.Show();
         }
     }

@@ -1,0 +1,59 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34525.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imager.UI", "Imager.UI\Imager.UI.csproj", "{EC593985-F23A-4CFD-8ED7-18388E40CB63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageChannelSplitter", "ImageChannelSplitter\ImageChannelSplitter.csproj", "{AE3247D3-AE8E-40B2-8B99-56F17DC9C43F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imager.Core", "Imager.Core\Imager.Core.csproj", "{D808CD79-FADA-4074-8AB0-0E45633D1377}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imager.Processors", "Imager.Processors\Imager.Processors.csproj", "{E3C57FD4-2D0D-46F0-A27D-5D22E16019B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imager.Converters", "Imager.Converters\Imager.Converters.csproj", "{7ABBB934-FDA0-4F3B-8521-29112F01B95C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imager.Utils", "Imager.Utils\Imager.Utils.csproj", "{A7F1376D-C5AA-493A-80A0-E5CB6CC51FFB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{063392C0-FF90-4269-87CD-A42940F948E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{063392C0-FF90-4269-87CD-A42940F948E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{063392C0-FF90-4269-87CD-A42940F948E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{063392C0-FF90-4269-87CD-A42940F948E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC593985-F23A-4CFD-8ED7-18388E40CB63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC593985-F23A-4CFD-8ED7-18388E40CB63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC593985-F23A-4CFD-8ED7-18388E40CB63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC593985-F23A-4CFD-8ED7-18388E40CB63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE3247D3-AE8E-40B2-8B99-56F17DC9C43F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE3247D3-AE8E-40B2-8B99-56F17DC9C43F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE3247D3-AE8E-40B2-8B99-56F17DC9C43F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE3247D3-AE8E-40B2-8B99-56F17DC9C43F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D808CD79-FADA-4074-8AB0-0E45633D1377}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D808CD79-FADA-4074-8AB0-0E45633D1377}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D808CD79-FADA-4074-8AB0-0E45633D1377}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D808CD79-FADA-4074-8AB0-0E45633D1377}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3C57FD4-2D0D-46F0-A27D-5D22E16019B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3C57FD4-2D0D-46F0-A27D-5D22E16019B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3C57FD4-2D0D-46F0-A27D-5D22E16019B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3C57FD4-2D0D-46F0-A27D-5D22E16019B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7ABBB934-FDA0-4F3B-8521-29112F01B95C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7ABBB934-FDA0-4F3B-8521-29112F01B95C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7ABBB934-FDA0-4F3B-8521-29112F01B95C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7ABBB934-FDA0-4F3B-8521-29112F01B95C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7F1376D-C5AA-493A-80A0-E5CB6CC51FFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7F1376D-C5AA-493A-80A0-E5CB6CC51FFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7F1376D-C5AA-493A-80A0-E5CB6CC51FFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7F1376D-C5AA-493A-80A0-E5CB6CC51FFB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {83B84655-E50C-421F-90AB-B8E4430D472E}
+	EndGlobalSection
+EndGlobal
