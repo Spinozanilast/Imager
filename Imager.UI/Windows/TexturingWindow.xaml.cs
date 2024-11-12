@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using ImageChannelSplitter.Implementations;
 using Imager.Controls;
 using Imager.Converters;
 using Imager.Processors.Calculators;
@@ -40,7 +41,7 @@ public partial class TexturingWindow : Window
             dataTable.Columns.Add(coefficient);
         }
 
-        for (var i = 0; i < _tabControls.Length - 1; i++)
+        for (var i = 0; i < _tabControls.Length; i++)
         {
             dataTable.Rows.Add();
         }
@@ -123,19 +124,17 @@ public partial class TexturingWindow : Window
         if (dataTable is null) return;
         var row = dataTable.Rows[index];
         var thisSignsCoeff = new SignsCoefs();
-        
-        row[0] = thisSignsCoeff.Energy = Math.Round(SignsCalculator.CalculateEnergy(normalizedMatrix, gradationsCount),
-            DecimalPlaces);
+
+        row[0] = thisSignsCoeff.Energy = SignsCalculator.CalculateEnergy(normalizedMatrix, gradationsCount);
         row[1] = thisSignsCoeff.Contrast =
-            Math.Round(SignsCalculator.CalculateContrast(normalizedMatrix, gradationsCount), DecimalPlaces);
+            SignsCalculator.CalculateContrast(normalizedMatrix, gradationsCount);
         row[2] = thisSignsCoeff.Homogeinity =
-            Math.Round(SignsCalculator.CalculateHomogenity(normalizedMatrix, gradationsCount), DecimalPlaces);
+            SignsCalculator.CalculateHomogenity(normalizedMatrix, gradationsCount);
 
         if (_mainImageSignsCoeffs.HasValue && index != 0)
         {
-            row[3] = thisSignsCoeff.R = Math.Round(
-                SignsCalculator.CalculateR(thisSignsCoeff, _mainImageSignsCoeffs.Value),
-                DecimalPlaces);
+            row[3] = thisSignsCoeff.R =
+                SignsCalculator.CalculateR(thisSignsCoeff, _mainImageSignsCoeffs.Value);
         }
 
         if (index == 0)

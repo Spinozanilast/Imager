@@ -2,7 +2,7 @@
 
 namespace Imager.Processors.Processors;
 
-public class DataTableFromMatrixCreator
+public static class DataTableFromMatrixCreator
 {
     public static DataTable ConvertMatrixToDataTable<T>(T[,] matrix)
     {

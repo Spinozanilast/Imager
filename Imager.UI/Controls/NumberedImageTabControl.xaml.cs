@@ -1,6 +1,8 @@
-﻿using System.IO;
+﻿using System.Data;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -8,6 +10,7 @@ using ImageChannelSplitter.Implementations;
 using Imager.Converters;
 using Imager.Core;
 using Imager.Processors;
+using Imager.Processors.Processors;
 using Imager.Services;
 using Imager.Utils;
 using Microsoft.Win32;
@@ -48,8 +51,8 @@ public partial class NumberedImageTabControl : UserControl
         };
 
         _imageRgbChannelsSplitter = new ImageRgbChannelsSplitter();
+        
     }
-
     private async void MainView_OnMouseDown(object sender, MouseButtonEventArgs e)
     {
         var dialog = new OpenFileDialog
@@ -104,6 +107,18 @@ public partial class NumberedImageTabControl : UserControl
         if (brush is not null) brush.Stretch = Stretch.Uniform;
 
         _imageRgbChannelsSplitter.ProcessBitmapSource(image);
+        
+        DisplayMatrixInGridView(OriginalMatrix, _imageRgbChannelsSplitter.ChannelsMatrices.HalftoneMatrix);
         IsAnimationEnabled = false;
+    }
+    
+    private void DisplayMatrixInGridView(DataGrid dataGrid, int[,] matrix)
+    {
+        dataGrid.ItemsSource = DataTableFromMatrixCreator.ConvertMatrixToDataTable(matrix).DefaultView;
+    }
+
+    private void CoOcurrenceMatrix_OnLoadingRow(object? sender, DataGridRowEventArgs e)
+    {
+        e.Row.Header = e.Row.GetIndex().ToString();
     }
 }

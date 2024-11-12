@@ -8,7 +8,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utils="clr-namespace:Imager.Utils">
     <UserControl.Resources>
         <Style TargetType="{x:Type TabControl}">
             <Setter Property="Background" Value="Transparent" />
@@ -32,7 +33,7 @@
                                 <ColorAnimation
                                     Duration="0:0:0.25"
                                     Storyboard.TargetProperty="Background.Color"
-                                    To="#9747FF" />
+                                    To="#999999" />
                             </Storyboard>
                         </BeginStoryboard>
                     </Trigger.EnterActions>
@@ -63,11 +64,25 @@
                 x:Name="MainView">
             </ui:GridView>
         </TabItem>
-        <TabItem Header="Матрица совместной встречаемости">
+        <TabItem Header="Оригинальная матрица">
             <DataGrid
                 EnableColumnVirtualization="True"
                 EnableRowVirtualization="True"
-                x:Name="CoOcurrenceMatrix" />
+                x:Name="OriginalMatrix" />
+        </TabItem>
+        <TabItem Header="Матрица совместной встречаемости">
+            <DataGrid
+                LoadingRow="CoOcurrenceMatrix_OnLoadingRow"
+                EnableColumnVirtualization="True"
+                EnableRowVirtualization="True"
+                AutoGenerateColumns="True"
+                x:Name="CoOcurrenceMatrix" >
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="Tag" Value="{Binding RelativeSource={RelativeSource Self}, Path=DataContext}"/>
+                    </Style>
+                </DataGrid.RowStyle>
+            </DataGrid>
         </TabItem>
         <TabItem Header="Нормализованная матрица">
             <DataGrid x:Name="NormalizedCoOcurrenceMatrix" />
